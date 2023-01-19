@@ -137,9 +137,9 @@ jobs:
            
        - name: schedule run
          run: |
-          arn_upload_app=`cat app_arn.txt`
+          arn_upload_app=`cat app_arn`
           echo $arn_upload_app
-          arn_upload_test=`cat test_arn.txt`
+          arn_upload_test=`cat test_arn`
           echo $arn_upload_test
           response_run_tests=$(aws devicefarm schedule-run --project-arn ${{ secrets.PROJECT_ARN }} \\
            --app-arn $arn_upload_app \\
