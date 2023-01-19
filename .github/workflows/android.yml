@@ -100,11 +100,11 @@ jobs:
          curl -T ./firstAppiumTest/target/zip-with-dependencies.zip $url_upload_test
          sleep 100
          
-       - name: upload arn test
-         uses: actions/upload-artifact@v2
-         with:
-          name: test_arn
-          path: ./test_upload_arn.txt
+      - name: upload arn test
+        uses: actions/upload-artifact@v2
+        with:
+         name: test_arn
+         path: ./test_upload_arn.txt
          
          
   jobs3:
