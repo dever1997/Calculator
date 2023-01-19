@@ -22,13 +22,41 @@ jobs:
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+      
     - name: Build with Gradle
       run: ./gradlew assembleDebug --stacktrace
-    - name: upload app file
+      
+#     - name: upload app file
+#       uses: actions/upload-artifact@v2
+#       with:
+#         name: app-debug.apk
+#         path: app/build/outputs/apk/debug/app-debug.apk 
+        
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY_ID }}
+          aws-region: us-west-2
+          
+    - name: upload apk file
+      run: |
+          response_upload_app=$(aws devicefarm create-upload --project-arn ${{secrets.PROJECT_ARN}} --name app-debug.apk --type ANDROID_APP)
+          echo $response_upload_app
+          url_upload_app=$(echo $response_upload_app | jq '.upload.url' | sed -e 's/^"//' -e 's/"$//')
+          echo $url_upload_app
+          url_upload_arn=$(echo $response_upload_app | jq '.upload.arn' | sed -e 's/^"//' -e 's/"$//')
+          echo $url_upload_arn > arn.txt
+          sleep 30
+          curl -T ./app/build/outputs/apk/debug/app-debug.apk  $url_upload_app 
+          sleep 100
+          echo "app uploaded"
+          
+    - name: upload arn app
       uses: actions/upload-artifact@v2
       with:
-        name: app-debug.apk
-        path: app/build/outputs/apk/debug/app-debug.apk 
+          name: app_arn
+          path: ./arn.txt
         
   create-test-set:
     needs: [build]
@@ -51,41 +79,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY_ID }}
           aws-region: us-west-2
           
-      - name: download artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: app-debug.apk
-          
-      - name: upload apk file
-        run: |
-          response_upload_app=$(aws devicefarm create-upload --project-arn ${{secrets.PROJECT_ARN}} --name app-debug.apk --type ANDROID_APP)
-          echo $response_upload_app
-          url_upload_app=$(echo $response_upload_app | jq '.upload.url' | sed -e 's/^"//' -e 's/"$//')
-          echo $url_upload_app
-          url_upload_arn=$(echo $response_upload_app | jq '.upload.arn' | sed -e 's/^"//' -e 's/"$//')
-          echo $url_upload_arn > arn.txt
-          sleep 30
-          curl -T app-debug.apk $url_upload_app 
-          sleep 100
-          echo "app uploaded"
-          
-      - name: upload arn app
-        uses: actions/upload-artifact@v2
-        with:
-          name: app_arn
-          path: ./arn.txt
           
       - name: create test package
         run: |
           cd firstAppiumTest
-          wget -O- <https://apt.corretto.aws/corretto.key> | sudo apt-key add -
-          echo 'deb <https://apt.corretto.aws> stable main' | sudo tee /etc/apt/sources.list.d/corretto.list
-          sudo apt-get update;
-          sudo apt-get install -y java-1.8.0-amazon-corretto-jdk
-          sudo update-alternatives --config java
-          sudo update-java-alternatives -s java-1.8.0-amazon-corretto   
-          export JAVA_HOME=/usr/lib/jvm/java-1.8.0-amazon-corretto/     
-          export PATH=$PATH:$JAVA_HOME      
+          wget https://raw.githubusercontent.com/chrishantha/install-java/master/install-java.sh
+          chmod +x install-java.sh
+          sudo apt install unzip
+          yes | sudo -E ./install-java.sh -f </path/to/oracle-java.tar.gz> -p </usr/lib/jvm>
           mvn clean package -DskipTests=true
           
       - name: upload to devicefarm test package
