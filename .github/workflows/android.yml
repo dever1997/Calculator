@@ -32,7 +32,7 @@ jobs:
         
   create-test-set:
     needs: [build]
-    runs-on: ubuntu_latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout actions
         uses: actions/checkout@v2
@@ -109,7 +109,7 @@ jobs:
          
   jobs3:
     needs: [build, create-test-set]
-    runs-on: ubuntu_latest
+    runs-on: ubuntu-latest
     name: Run and publish test
     
     steps:
