@@ -70,10 +70,12 @@ jobs:
         uses: actions/checkout@master
         with:
           repository: dever1997/firstAppiumTest
+          path: firstAppiumTest
           token: ${{ secrets.GIT_TOKEN }}
           
       - name: create test packages
         run: |
+           cd firstAppiumTest
            wget -O- https://apt.corretto.aws/corretto.key | sudo apt-key add - 
            sudo add-apt-repository 'deb https://apt.corretto.aws stable main'
            sudo apt-get update; sudo apt-get install -y java-11-amazon-corretto-jdk
