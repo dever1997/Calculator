@@ -47,7 +47,7 @@ jobs:
           echo $url_upload_arn > arn.txt
           sleep 30
           curl -T ./app/build/outputs/apk/debug/app-debug.apk  $url_upload_app 
-          sleep 100
+          sleep 90
           echo "app uploaded"
           
     - name: upload arn app
@@ -100,7 +100,7 @@ jobs:
          ls ./firstAppiumTest/target
          ls 
          curl -T ./firstAppiumTest/target/zip-with-dependencies.zip $url_upload_test
-         sleep 100
+         sleep 90
          
       - name: upload arn test artifact
         uses: actions/upload-artifact@v3
@@ -141,7 +141,7 @@ jobs:
            echo $arn_upload_app
            arn_upload_test=`cat test_upload_arn.txt`
            echo $arn_upload_test
-           response_run_tests=$(aws devicefarm schedule-run --project-arn ${{ secrets.PROJECT_ARN }} --app-arn $arn_upload_app --device-pool-arn ${{ secrets.DEVICE_POOL_ARN }} --name 'first_cli_run' --test type=APPIUM_JAVA_TESTNG,testPackageArn=$arn_upload_test)
+           response_run_tests=$(aws devicefarm schedule-run --project-arn ${{ secrets.PROJECT_ARN }} --app-arn $arn_upload_app --device-pool-arn ${{ secrets.DEVICE_POOL_ARN }} --name 'second_cli_run' --test type=APPIUM_JAVA_TESTNG,testPackageArn=$arn_upload_test)
            
            echo $response_run_tests
            arn_test_run=$(echo $response_run_tests | jq '.run.arn' | sed -e 's/^"//' -e 's/"$//')
@@ -161,7 +161,12 @@ jobs:
            echo "$aws_resp"
            
            aws_resp=$(aws devicefarm get-run --arn $arn_test_run | jq '.run.counters')
-           echo $aws_resp > aws_response_result.json
+           echo $aws_resp 
+           
+           sleep 5
+           
+           aws_resp=$(aws devicefarm get-run --arn $arn_test_run | jq '.run.result')
+           echo $aws_resp 
       
       
       
