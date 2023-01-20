@@ -137,15 +137,11 @@ jobs:
            
        - name: schedule run
          run: |
-          arn_upload_app=`cat arn.txt`
-          echo $arn_upload_app
-          arn_upload_test=`cat test_upload_arn.txt`
-          echo $arn_upload_test
-          response_run_tests=$(aws devicefarm schedule-run --project-arn ${{ secrets.PROJECT_ARN }} \\
-           --app-arn $arn_upload_app \\
-           --device-pool-arn ${{ secrets.DEVICE_POOL_ARN }} \\
-           --name 'first_cli_run' \\
-           --test type=APPIUM_JAVA_TESTNG,testPackageArn=$arn_upload_test)
+           arn_upload_app=`cat arn.txt`
+           echo $arn_upload_app
+           arn_upload_test=`cat test_upload_arn.txt`
+           echo $arn_upload_test
+           response_run_tests=$(aws devicefarm schedule-run --project-arn ${{ secrets.PROJECT_ARN }} --app-arn $arn_upload_app --device-pool-arn ${{ secrets.DEVICE_POOL_ARN }} --name 'first_cli_run' --test type=APPIUM_JAVA_TESTNG,testPackageArn=$arn_upload_test)
            
            echo $response_run_tests
            arn_test_run=$(echo $response_run_tests | jq '.run.arn' | sed -e 's/^"//' -e 's/"$//')
