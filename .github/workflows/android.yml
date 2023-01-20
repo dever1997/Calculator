@@ -53,7 +53,7 @@ jobs:
     - name: upload arn app
       uses: actions/upload-artifact@v2
       with:
-          name: app_arn
+          name: app_arn.txt
           path: ./arn.txt
           
           
@@ -105,7 +105,7 @@ jobs:
       - name: upload arn test artifact
         uses: actions/upload-artifact@v2
         with:
-         name: test_arn
+         name: test_arn.txt
          path: ./test_upload_arn.txt
          
          
@@ -128,18 +128,18 @@ jobs:
        - name: download app arn
          uses: actions/download-artifact@v3
          with:
-           name: app_arn
+           name: app_arn.txt
            
        - name: download test arn
          uses: actions/download-artifact@v3
          with:
-           name: test_arn
+           name: test_arn.txt
            
        - name: schedule run
          run: |
-          arn_upload_app=`cat app_arn`
+          arn_upload_app=$(cat app_arn.txt)
           echo $arn_upload_app
-          arn_upload_test=`cat test_arn`
+          arn_upload_test=$(cat test_arn.txt)
           echo $arn_upload_test
           response_run_tests=$(aws devicefarm schedule-run --project-arn ${{ secrets.PROJECT_ARN }} \\
            --app-arn $arn_upload_app \\
