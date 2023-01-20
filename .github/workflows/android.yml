@@ -51,9 +51,9 @@ jobs:
           echo "app uploaded"
           
     - name: upload arn app
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
-          name: app_arn.txt
+          name: app_arn
           path: ./arn.txt
           
           
@@ -103,9 +103,9 @@ jobs:
          sleep 100
          
       - name: upload arn test artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-         name: test_arn.txt
+         name: test_arn
          path: ./test_upload_arn.txt
          
          
@@ -128,18 +128,18 @@ jobs:
        - name: download app arn
          uses: actions/download-artifact@v2
          with:
-           name: app_arn.txt
+           name: app_arn
            
        - name: download test arn
          uses: actions/download-artifact@v2
          with:
-           name: test_arn.txt
+           name: test_arn
            
        - name: schedule run
          run: |
-          arn_upload_app=$(cat app_arn.txt)
+          arn_upload_app=`cat arn.txt`
           echo $arn_upload_app
-          arn_upload_test=$(cat test_arn.txt)
+          arn_upload_test=`cat test_upload_arn.txt`
           echo $arn_upload_test
           response_run_tests=$(aws devicefarm schedule-run --project-arn ${{ secrets.PROJECT_ARN }} \\
            --app-arn $arn_upload_app \\
