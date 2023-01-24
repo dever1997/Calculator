@@ -52,15 +52,11 @@ jobs:
           name: app_arn
           path: ./arn.txt
           
-          
-          
-        
+                 
   build-test-package:
     needs: [build-app]
     runs-on: ubuntu-latest
     steps:
-#       - name: Checkout actions
-#         uses: actions/checkout@v3
 
       - name: Checkout appiumTest repo
         uses: actions/checkout@master
@@ -105,10 +101,13 @@ jobs:
          path: ./test_upload_arn.txt
          
          
-  jobs3:
+  job3:
     needs: [build-test-package]
     runs-on: ubuntu-latest
-    name: Run and publish test
+    name: Execute test on AWS Devicefarm
+    
+    outputs: 
+      output1: ${{steps.results.outputs.result}}
     
     steps:
        - name: Checkout actions
@@ -132,6 +131,7 @@ jobs:
            name: test_arn
            
        - name: schedule run
+         id: results
          run: |
            arn_upload_app=`cat arn.txt`
            echo $arn_upload_app
@@ -156,17 +156,17 @@ jobs:
            done
            
            aws_resp=$(aws devicefarm get-run --arn $arn_test_run | jq '.run.counters')
-           echo $aws_resp 
-           
-           sleep 5
-           
+           echo $aws_resp            
+           sleep 5     
            aws_result=$(aws devicefarm get-run --arn $arn_test_run | jq '.run.result')
+           echo "result=$aws_result" >> $GITHUB_OUTPUT
+           
+       - if: ${{steps.results.outputs.result == 'Passed'}}
+         run: |
+          echo "Test passed"
 
            
-       - name: cancel the workflow if the test fails
-         if: ${{ $aws_result == 'Passed'}}
-         run: |
-           echo "Test passed"
+
       
       
       
