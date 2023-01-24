@@ -3,7 +3,7 @@ name: Android CI/CD
 on: [push, pull_request]
 
 jobs:
-  build:
+  build-app:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -55,8 +55,8 @@ jobs:
           
           
         
-  create-test-set:
-    needs: [build]
+  build-test-package:
+    needs: [build-app]
     runs-on: ubuntu-latest
     steps:
 #       - name: Checkout actions
@@ -106,7 +106,7 @@ jobs:
          
          
   jobs3:
-    needs: [build, create-test-set]
+    needs: [build-test-package]
     runs-on: ubuntu-latest
     name: Run and publish test
     
@@ -141,12 +141,12 @@ jobs:
            
            echo $response_run_tests
            arn_test_run=$(echo $response_run_tests | jq '.run.arn' | sed -e 's/^"//' -e 's/"$//')
-           echo $arn_test_run > runtime_arn.txt
+           echo $arn_test_run 
            
            aws_resp=$(echo $response_run_tests | jq '.run.status')
            while [ "$aws_resp" != *"COMPLETED"* ]
            do
-            echo "entering while..."
+            echo "waiting for tests ..."
             sleep 30
             aws_resp=$(aws devicefarm get-run --arn $arn_test_run | jq '.run.status')
             if [[ "$aws_resp" == *"COMPLETED"* ]]; then 
@@ -154,15 +154,19 @@ jobs:
             break
             fi
            done
-           echo "$aws_resp"
            
            aws_resp=$(aws devicefarm get-run --arn $arn_test_run | jq '.run.counters')
            echo $aws_resp 
            
            sleep 5
            
-           aws_resp=$(aws devicefarm get-run --arn $arn_test_run | jq '.run.result')
-           echo $aws_resp 
+           aws_result=$(aws devicefarm get-run --arn $arn_test_run | jq '.run.result')
+
+           
+       - name: cancel the workflow if the test fails
+         if: ${{ $aws_result == 'Passed'}}
+         run: |
+           echo "Test passed"
       
       
       
