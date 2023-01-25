@@ -161,9 +161,14 @@ jobs:
            aws_result=$(aws devicefarm get-run --arn $arn_test_run | jq '.run.result')
            echo "result=$aws_result" >> $GITHUB_OUTPUT
            
-       - if: ${{steps.results.outputs.result == 'Failed'}}
+       - name: exit if test fail
+         if: ${{steps.results.outputs.result == 'Failed'}}
          run: |
           exit 1
+          
+       - name: continue if step succeed
+         run: |
+           echo "Test passed."
 
            
 
