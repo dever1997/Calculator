@@ -107,7 +107,7 @@ jobs:
     name: Execute test on AWS Devicefarm
     
     outputs: 
-      output1: ${{steps.results.outputs.result}}
+      output1: ${{steps.step4.outputs.result}}
     
     steps:
        - name: Checkout actions
@@ -130,8 +130,7 @@ jobs:
          with:
            name: test_arn
            
-       - name: schedule run
-         id: results
+       - id: step4
          run: |
            arn_upload_app=`cat arn.txt`
            echo $arn_upload_app
@@ -162,9 +161,9 @@ jobs:
            echo "result=$aws_result" >> $GITHUB_OUTPUT
            
   job4:
-     needs: [job3]
+     needs: job3
      runs-on: ubuntu-latest
-     if: ${{needs.job3.outputs.output1 == FAILED}}     
+     if: ${{needs.job3.outputs.output1 == "FAILED"}}     
      steps:
        - uses: actions/github-script@v3
          with: 
