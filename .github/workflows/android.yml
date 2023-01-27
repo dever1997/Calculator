@@ -164,8 +164,7 @@ jobs:
   job4:
      needs: [job3]
      runs-on: ubuntu-latest
-     if: ${{needs.job3.outputs.output1 == 'FAILED'}}
-     
+     if: ${{needs.job3.outputs.output1 == 'Failed'}}     
      steps:
        - uses: actions/github-script@v3
          with: 
@@ -174,6 +173,4 @@ jobs:
 
            
 
-      
-      
-        
+         
