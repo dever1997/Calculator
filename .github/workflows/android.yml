@@ -165,7 +165,7 @@ jobs:
      runs-on: ubuntu-latest
      if: ${{needs.job3.outputs.output1 == 'FAILED'}}     
      steps:
-       - uses: actions/github-script@v3
+       - uses: actions/github-script@v6
          with: 
           script: |
             core.setFailed('Test failed')
