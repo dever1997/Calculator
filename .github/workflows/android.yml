@@ -1,6 +1,6 @@
 name: Android CI/CD
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   build-app:
@@ -107,7 +107,7 @@ jobs:
     name: Execute test on AWS Devicefarm
     
     outputs: 
-      output1: ${{steps.results.outputs.result}}
+      output1: ${{steps.step4.outputs.result}}
     
     steps:
        - name: Checkout actions
@@ -130,8 +130,7 @@ jobs:
          with:
            name: test_arn
            
-       - name: schedule run
-         id: results
+       - id: step4
          run: |
            arn_upload_app=`cat arn.txt`
            echo $arn_upload_app
@@ -146,7 +145,7 @@ jobs:
            aws_resp=$(echo $response_run_tests | jq '.run.status')
            while [ "$aws_resp" != *"COMPLETED"* ]
            do
-            echo "waiting for tests ..."
+            echo "waiting for test result ..."
             sleep 30
             aws_resp=$(aws devicefarm get-run --arn $arn_test_run | jq '.run.status')
             if [[ "$aws_resp" == *"COMPLETED"* ]]; then 
@@ -161,19 +160,16 @@ jobs:
            aws_result=$(aws devicefarm get-run --arn $arn_test_run | jq '.run.result')
            echo "result=$aws_result" >> $GITHUB_OUTPUT
            
-       - name: exit if test fail
-         if: ${{steps.results.outputs.result == 'Failed'}}
-         run: |
-          exit 1
-          
-       - name: continue if step succeed
-         run: |
-           echo "Test passed."
+  job4:
+     needs: job3
+     runs-on: ubuntu-latest
+     if: needs.job3.outputs.output1 == 'FAILED'     
+     steps:
+       - uses: actions/github-script@v6
+         with: 
+          script: |
+            core.setFailed('Test failed')
 
            
 
-      
-      
-      
-      
-        
+         
